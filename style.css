@@ -1,0 +1,207 @@
+body {
+  margin: 0;
+  padding: 0;
+  margin-top: -20px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+h1 {
+  padding: 0px;
+  font-size: 18px;
+  margin: 0px;
+}
+
+#sidebar {
+  position: fixed;
+  height: 100vh;
+  width: 300px;
+  color: white;
+  padding: 15px 0px 15px 30px;
+  background-color: black;
+  transition: 0.5s ease;
+}
+
+.sidebar {
+  width: 80px !important;
+}
+
+.header {
+  position: relative;
+}
+
+.add-root {
+  position: absolute;
+  right: 10px;
+  top: -4px;
+  height: 30px;
+  width: 30px;
+  cursor: pointer;
+  padding: 4px;
+}
+.add-root:nth-child(1) {
+  right: 50px;
+}
+
+.add-root:hover {
+  background-color: rgba(97, 97, 97, 0.5);
+  border-radius: 10px;
+}
+
+#main-content {
+  margin-top: 20px;
+  margin-left: 300px;
+  padding: 0px 80px;
+  background-color: #f1c40f;
+  height: 100vh;
+  transition: 0.3s ease;
+}
+
+.main-content {
+  margin-left: 80px !important;
+}
+
+#toggle-button {
+  border: none;
+  width: 40px;
+  cursor: pointer;
+}
+
+#root {
+  overflow-x: auto;
+  transition: 0.3s ease;
+  margin-top: 40px;
+  overflow-y: auto;
+  height: 85%;
+}
+
+#root::-webkit-scrollbar {
+  width: 12px;
+}
+
+#root::-webkit-scrollbar-thumb {
+  background: rgba(4, 4, 4, 0.6);
+  border-radius: 20px;
+}
+
+#root::-webkit-scrollbar-track {
+  background: rgba(235, 235, 235, 0.4);
+  border-radius: 20px;
+}
+
+.root {
+  display: none !important;
+  transition: 0.3s ease;
+}
+
+#new-folder:hover {
+  background-color: #385d81;
+}
+
+.outer-div {
+  width: 300px;
+  position: relative;
+  overflow: hidden;
+}
+
+.outer-div .outer-div {
+  padding: 0px 30px;
+  right: 30px;
+  margin-left: 40px;
+  position: relative;
+  transition: 0.5s ease-in-out;
+}
+
+.outer-div .outer-div:hover {
+  border-left: 2px solid rgb(122, 122, 122);
+}
+
+.input {
+  background-color: grey;
+  padding: 4px 3px;
+  position: absolute;
+  display: none;
+}
+
+.input::placeholder {
+  color: white;
+}
+
+.line {
+  border-left: 2px solid white;
+  position: absolute;
+  left: 12px;
+  width: 20px;
+  /* height: 10vh; */
+}
+
+.folder-container {
+  display: flex;
+  align-items: center;
+  color: white;
+  position: relative;
+  cursor: pointer;
+}
+
+.folder-container:hover {
+  background-color: rgba(58, 58, 58, 0.5);
+}
+
+.arrow {
+  width: 25px;
+  transition: 0.3s ease-in-out;
+  cursor: pointer;
+  transform: rotate(90deg);
+}
+
+.nested-input {
+  /* width: 50%; */
+}
+
+.arrow-rotate {
+  transform: rotate(0deg);
+}
+
+.hidden-child {
+  display: none !important;
+}
+
+.folder {
+  display: flex;
+}
+
+.file-name-img {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.file-icon-png {
+  width: 24px;
+  height: 24px;
+}
+
+.add-folders-container {
+  display: none;
+  gap: 6px;
+}
+
+.img-btn {
+  width: 26px;
+  cursor: pointer;
+  position: relative;
+  left: 12px;
+  padding: 4px;
+}
+
+.img-btn:hover {
+  background-color: rgba(97, 97, 97, 0.5);
+  border-radius: 10px;
+}
+
+.add-folder-btn {
+  width: 26px;
+}
+
+.hide-root-btn {
+  display: none;
+}
