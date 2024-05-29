@@ -85,8 +85,7 @@ class App {
         ];
   }
 
-  createRootFolder(value, parentId = null, type) {
-    console.log(type);
+  createRootFolderOrFile(value, parentId = null, type) {
     let node;
     if (type === "folder") {
       node = new Node(value, parentId, type);
@@ -135,6 +134,18 @@ class App {
     return fileInfo;
   }
 
+  deleteFolderOrFiles(el) {
+    const name = el.querySelector(".file-name-tag");
+    const confirmation = confirm(`DO you want to delete:-   ${name.innerText}`);
+
+    if (confirmation) {
+      const id = Number(el.id);
+      this.db = this.db.filter((e) => e.id !== id && e.parentId !== id);
+      this.render();
+      this.setLocalStorage();
+    }
+  }
+
   createFolderElements(datas) {
     const fragment = document.createDocumentFragment();
 
@@ -143,6 +154,7 @@ class App {
 
     for (let file of datas) {
       const folderContainer = document.createElement("div");
+      folderContainer.setAttribute("id", file.id);
       folderContainer.classList.add("folder-container");
       outerDiv.appendChild(folderContainer);
 
@@ -162,9 +174,13 @@ class App {
       const fileInfo = this.createFile(file);
       folderContainer.appendChild(fileInfo);
 
+      folderContainer.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        this.deleteFolderOrFiles(folderContainer);
+      });
+
       if (file.icon === "folder") {
         const addFolderContainer = document.createElement("div");
-        addFolderContainer.setAttribute("id", file.id);
         addFolderContainer.classList.add("add-folders-container");
         folderContainer.appendChild(addFolderContainer);
 
@@ -194,6 +210,7 @@ class App {
 
         addFolderBtn.addEventListener("click", (e) => {
           e.stopPropagation();
+
           nestedInput.style.display = "block";
           nestedInput.focus();
           nestedFileType = "folder";
@@ -204,17 +221,15 @@ class App {
             const value = nestedInput.value;
 
             if (value.trim()) {
-              app.createRootFolder(value, file.id, nestedFileType);
+              app.createRootFolderOrFile(value, file.id, nestedFileType);
 
-              rootInput.value = "";
-              title.style.display = "block";
-              rootInput.style.display = "none";
+              nestedInput.value = "";
+              nestedInput.style.display = "none";
               nestedFileType = null;
             }
           } else if (e.key === "Escape") {
-            rootInput.value = "";
-            title.style.display = "block";
-            rootInput.style.display = "none";
+            nestedInput.value = "";
+            nestedInput.style.display = "none";
             nestedFileType = null;
           }
         });
@@ -232,20 +247,23 @@ class App {
         folderContainer.addEventListener("click", (e) => {
           arrowImgBtn.classList.toggle("arrow-rotate");
           const children =
-            arrowImgBtn.parentElement.parentElement.nextElementSibling
-              .nextElementSibling;
+            arrowImgBtn.parentElement.parentElement.nextElementSibling;
 
-          console.log(children);
           children.classList.toggle("hidden-child");
         });
-
-        const line = document.createElement("span");
-        line.classList.add("line");
-        outerDiv.appendChild(line);
       }
 
       const files = this.getFiles(file.id);
       const subFiles = this.createFolderElements(files);
+
+      // if (subFiles) {
+      //   console.log(subFiles.children[0]);
+      //   const nestedInput = document.createElement("input");
+      //   nestedInput.type = "text";
+      //   nestedInput.classList.add("input");
+
+      //   outerDiv.appendChild(nestedInput);
+      // }
 
       outerDiv.appendChild(subFiles);
     }
@@ -299,7 +317,7 @@ rootInput.addEventListener("keydown", (e) => {
     const value = rootInput.value;
 
     if (value.trim()) {
-      app.createRootFolder(value, type);
+      app.createRootFolderOrFile(value, null, type);
 
       rootInput.value = "";
       title.style.display = "block";
