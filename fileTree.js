@@ -18,6 +18,7 @@ class App {
       "html",
       "css",
       "js",
+      "png",
       "py",
       "ts",
       "txt",
