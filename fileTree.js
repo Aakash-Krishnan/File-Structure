@@ -18,7 +18,6 @@ class App {
       "html",
       "css",
       "js",
-      "png",
       "py",
       "ts",
       "txt",
@@ -98,24 +97,26 @@ class App {
   createFolderOrFileNode(value, parentId = null, type) {
     let node;
     if (type === "folder") {
+      node = new Node(value, parentId, type);
       if (parentId) {
+        // NOTE: If it is a new Folder we insert at the starting.
         const pIdx = this.db.findIndex((e) => e.id === parentId);
-        node = new Node(value, parentId, type);
         this.db.splice(pIdx + 1, 0, node);
-      } else {
-        node = new Node(value, parentId, type);
       }
     } else {
       const fileTypes = value.split(".");
+
+      let type = "doc";
       if (fileTypes.length > 1 && this.fileIcons.has(fileTypes[1])) {
-        node = new Node(value, parentId, fileTypes[1]);
-      } else {
-        node = new Node(value, parentId);
+        type = fileTypes[1];
       }
+
+      node = new Node(value, parentId, type);
     }
+
     this.db.push(node);
-    this.setLocalStorage();
     this.render();
+    this.setLocalStorage();
   }
 
   getFiles(parentId) {
@@ -141,7 +142,7 @@ class App {
           newParentId = this.db.filter((e) => e.id === newNodeId)[0].parentId;
 
           const findCurrNode = this.db.find((e) => e.id === Number(el.id));
-          console.log(findCurrNode);
+          // console.log(findCurrNode);
           // const currNode = this.db.splice()
         }
 
@@ -151,9 +152,9 @@ class App {
           }
         });
 
-        console.log(this.db);
-        this.setLocalStorage();
+        // console.log(this.db);
         this.render();
+        this.setLocalStorage();
       });
     }
   }
@@ -287,6 +288,7 @@ class App {
             nestedInput.style.display = "block";
             nestedInput.focus();
             nestedFileType = "file";
+            nestedInput.placeholder = `new ${nestedFileType}`;
           });
 
           addFolderContainer.appendChild(addFileBtn);
@@ -301,6 +303,7 @@ class App {
             nestedInput.style.display = "block";
             nestedInput.focus();
             nestedFileType = "folder";
+            nestedInput.placeholder = `new ${nestedFileType}`;
           });
 
           nestedInput.addEventListener("keydown", (e) => {
@@ -347,15 +350,6 @@ class App {
           outerDiv.appendChild(subFiles);
           this.addDragOver(folderContainer.nextElementSibling);
         }
-
-        // if (subFiles) {
-        //   console.log(subFiles.children[0]);
-        //   const nestedInput = document.createElement("input");
-        //   nestedInput.type = "text";
-        //   nestedInput.classList.add("input");
-
-        //   outerDiv.appendChild(nestedInput);
-        // }
       }
 
       fragment.appendChild(outerDiv);
