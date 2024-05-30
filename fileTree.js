@@ -12,7 +12,7 @@ class Node {
 class App {
   constructor(rootSelector) {
     this.root = document.getElementById(rootSelector);
-    this.addDragOver(this.root);
+
     this.closestEl = null;
     this.fileIcons = new Set([
       "html",
@@ -45,6 +45,18 @@ class App {
             icon: "folder",
           },
           {
+            id: 4,
+            fileName: "Nested Folder",
+            parentId: 1,
+            icon: "folder",
+          },
+          {
+            id: 9,
+            fileName: "Folder 5",
+            parentId: 4,
+            icon: "folder",
+          },
+          {
             id: 2,
             fileName: "index.html",
             parentId: 1,
@@ -55,12 +67,6 @@ class App {
             fileName: "style.css",
             parentId: 1,
             icon: "css",
-          },
-          {
-            id: 4,
-            fileName: "Nested Folder",
-            parentId: 1,
-            icon: "folder",
           },
           {
             id: 5,
@@ -86,19 +92,19 @@ class App {
             parentId: 6,
             icon: "py",
           },
-          {
-            id: 9,
-            fileName: "Folder 5",
-            parentId: 4,
-            icon: "folder",
-          },
         ];
   }
 
   createFolderOrFileNode(value, parentId = null, type) {
     let node;
     if (type === "folder") {
-      node = new Node(value, parentId, type);
+      if (parentId) {
+        const pIdx = this.db.findIndex((e) => e.id === parentId);
+        node = new Node(value, parentId, type);
+        this.db.splice(pIdx + 1, 0, node);
+      } else {
+        node = new Node(value, parentId, type);
+      }
     } else {
       const fileTypes = value.split(".");
       if (fileTypes.length > 1 && this.fileIcons.has(fileTypes[1])) {
@@ -129,14 +135,23 @@ class App {
       el.addEventListener("dragend", (e) => {
         el.classList.remove("is-dragging");
 
-        const nextNodeId = Number(this.closestEl.id);
+        let newParentId;
+        if (this.closestEl) {
+          const newNodeId = Number(this.closestEl.id);
+          newParentId = this.db.filter((e) => e.id === newNodeId)[0].parentId;
+
+          const findCurrNode = this.db.find((e) => e.id === Number(el.id));
+          console.log(findCurrNode);
+          // const currNode = this.db.splice()
+        }
 
         this.db.forEach((node) => {
           if (node.id === Number(el.id)) {
-            node.parentId = nextNodeId;
+            node.parentId = newParentId ? newParentId : null;
           }
         });
 
+        console.log(this.db);
         this.setLocalStorage();
         this.render();
       });
@@ -148,7 +163,6 @@ class App {
       e.preventDefault();
       const fileEl = document.querySelector(".is-dragging");
       this.closestEl = this.getClosestElement(FolderDiv, e.clientY);
-      
 
       if (this.closestEl) {
         FolderDiv.insertBefore(fileEl, this.closestEl);
@@ -322,7 +336,8 @@ class App {
             const children =
               arrowImgBtn.parentElement.parentElement.nextElementSibling;
 
-            children.classList.toggle("hidden-child");
+            if (children.className.split(" ")[0] === "outer-div")
+              children.classList.toggle("hidden-child");
           });
         }
 
@@ -356,6 +371,7 @@ class App {
 }
 
 const app = new App("root");
+app.addDragOver(app.root);
 
 const sidebar = document.getElementById("sidebar");
 const toggleButton = document.getElementById("toggle-button");
