@@ -7,9 +7,13 @@ class Node {
   }
 }
 
+// TODO: to add draggable and dragover feature.
+
 class App {
   constructor(rootSelector) {
     this.root = document.getElementById(rootSelector);
+    this.addDragOver(this.root);
+    this.closestEl = null;
     this.fileIcons = new Set([
       "html",
       "css",
@@ -82,10 +86,16 @@ class App {
             parentId: 6,
             icon: "py",
           },
+          {
+            id: 9,
+            fileName: "Folder 5",
+            parentId: 4,
+            icon: "folder",
+          },
         ];
   }
 
-  createRootFolderOrFile(value, parentId = null, type) {
+  createFolderOrFileNode(value, parentId = null, type) {
     let node;
     if (type === "folder") {
       node = new Node(value, parentId, type);
@@ -108,6 +118,66 @@ class App {
 
   getRootDatas() {
     return this.db.filter((e) => e.parentId === null);
+  }
+
+  addDraggable(el) {
+    if (el) {
+      el.addEventListener("dragstart", (e) => {
+        el.classList.add("is-dragging");
+      });
+
+      el.addEventListener("dragend", (e) => {
+        el.classList.remove("is-dragging");
+
+        const nextNodeId = Number(this.closestEl.id);
+
+        this.db.forEach((node) => {
+          if (node.id === Number(el.id)) {
+            node.parentId = nextNodeId;
+          }
+        });
+
+        this.setLocalStorage();
+        this.render();
+      });
+    }
+  }
+
+  addDragOver(FolderDiv) {
+    FolderDiv.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      const fileEl = document.querySelector(".is-dragging");
+      this.closestEl = this.getClosestElement(FolderDiv, e.clientY);
+      
+
+      if (this.closestEl) {
+        FolderDiv.insertBefore(fileEl, this.closestEl);
+      } else {
+        FolderDiv.appendChild(fileEl);
+      }
+    });
+  }
+
+  getClosestElement(FolderDiv, yAxis) {
+    const files = FolderDiv.querySelectorAll(
+      ".folder-container:not(.is-dragging)"
+    );
+
+    let closestEl = null;
+    let closestDistance = Number.NEGATIVE_INFINITY;
+
+    files.forEach((file) => {
+      const boundry = file.getBoundingClientRect();
+      const bottom = boundry.bottom;
+
+      const distance = yAxis - bottom;
+
+      if (distance < 0 && distance > closestDistance) {
+        closestDistance = distance;
+        closestEl = file;
+      }
+    });
+    return closestEl;
   }
 
   createFile(file) {
@@ -147,128 +217,135 @@ class App {
   }
 
   createFolderElements(datas) {
-    const fragment = document.createDocumentFragment();
+    if (datas) {
+      const fragment = document.createDocumentFragment();
 
-    const outerDiv = document.createElement("div");
-    outerDiv.classList.add("outer-div");
+      const outerDiv = document.createElement("div");
+      outerDiv.classList.add("outer-div");
 
-    for (let file of datas) {
-      const folderContainer = document.createElement("div");
-      folderContainer.setAttribute("id", file.id);
-      folderContainer.classList.add("folder-container");
-      outerDiv.appendChild(folderContainer);
+      for (let file of datas) {
+        const folderContainer = document.createElement("div");
+        folderContainer.setAttribute("id", file.id);
+        folderContainer.classList.add("folder-container");
 
-      let arrowImgBtn;
-      if (file.icon === "folder") {
-        const arrowContainer = document.createElement("div");
-        arrowContainer.classList.add("arrow-container");
-        folderContainer.appendChild(arrowContainer);
+        outerDiv.appendChild(folderContainer);
 
-        arrowImgBtn = document.createElement("img");
-        arrowImgBtn.src = "./assests/right.png";
-        arrowImgBtn.classList.add("arrow");
+        let arrowImgBtn;
+        if (file.icon === "folder") {
+          const arrowContainer = document.createElement("div");
+          arrowContainer.classList.add("arrow-container");
+          folderContainer.appendChild(arrowContainer);
 
-        arrowContainer.appendChild(arrowImgBtn);
-      }
+          arrowImgBtn = document.createElement("img");
+          arrowImgBtn.src = "./assests/right.png";
+          arrowImgBtn.classList.add("arrow");
 
-      const fileInfo = this.createFile(file);
-      folderContainer.appendChild(fileInfo);
+          arrowContainer.appendChild(arrowImgBtn);
+        }
 
-      folderContainer.addEventListener("contextmenu", (e) => {
-        e.preventDefault();
-        this.deleteFolderOrFiles(folderContainer);
-      });
+        const fileInfo = this.createFile(file);
+        folderContainer.appendChild(fileInfo);
+        this.addDraggable(folderContainer);
 
-      if (file.icon === "folder") {
-        const addFolderContainer = document.createElement("div");
-        addFolderContainer.classList.add("add-folders-container");
-        folderContainer.appendChild(addFolderContainer);
-
-        const addFileBtn = document.createElement("img");
-        addFileBtn.classList.add("img-btn", "add-file-btn");
-        addFileBtn.src = `./assests/add-file.png`;
-
-        const nestedInput = document.createElement("input");
-        nestedInput.classList.add("input");
-        folderContainer.appendChild(nestedInput);
-
-        let nestedFileType;
-
-        addFileBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-
-          nestedInput.style.display = "block";
-          nestedInput.focus();
-          nestedFileType = "file";
+        folderContainer.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          this.deleteFolderOrFiles(folderContainer);
         });
 
-        addFolderContainer.appendChild(addFileBtn);
+        if (file.icon === "folder") {
+          const addFolderContainer = document.createElement("div");
+          addFolderContainer.classList.add("add-folders-container");
+          folderContainer.appendChild(addFolderContainer);
 
-        const addFolderBtn = document.createElement("img");
-        addFolderBtn.classList.add("img-btn", "add-folder-btn");
-        addFolderBtn.src = `./assests/add-folder.png`;
+          const addFileBtn = document.createElement("img");
+          addFileBtn.classList.add("img-btn", "add-file-btn");
+          addFileBtn.src = `./assests/add-file.png`;
 
-        addFolderBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
+          const nestedInput = document.createElement("input");
+          nestedInput.classList.add("input");
+          folderContainer.appendChild(nestedInput);
 
-          nestedInput.style.display = "block";
-          nestedInput.focus();
-          nestedFileType = "folder";
-        });
+          let nestedFileType;
 
-        nestedInput.addEventListener("keydown", (e) => {
-          if (e.key === "Enter") {
-            const value = nestedInput.value;
+          addFileBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
 
-            if (value.trim()) {
-              app.createRootFolderOrFile(value, file.id, nestedFileType);
+            nestedInput.style.display = "block";
+            nestedInput.focus();
+            nestedFileType = "file";
+          });
 
+          addFolderContainer.appendChild(addFileBtn);
+
+          const addFolderBtn = document.createElement("img");
+          addFolderBtn.classList.add("img-btn", "add-folder-btn");
+          addFolderBtn.src = `./assests/add-folder.png`;
+
+          addFolderBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+
+            nestedInput.style.display = "block";
+            nestedInput.focus();
+            nestedFileType = "folder";
+          });
+
+          nestedInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              const value = nestedInput.value;
+
+              if (value.trim()) {
+                app.createFolderOrFileNode(value, file.id, nestedFileType);
+
+                nestedInput.value = "";
+                nestedInput.style.display = "none";
+                nestedFileType = null;
+              }
+            } else if (e.key === "Escape") {
               nestedInput.value = "";
               nestedInput.style.display = "none";
               nestedFileType = null;
             }
-          } else if (e.key === "Escape") {
-            nestedInput.value = "";
-            nestedInput.style.display = "none";
-            nestedFileType = null;
-          }
-        });
+          });
 
-        addFolderContainer.appendChild(addFolderBtn);
+          addFolderContainer.appendChild(addFolderBtn);
 
-        folderContainer.addEventListener("mouseenter", (e) => {
-          addFolderContainer.style.display = "flex";
-        });
+          folderContainer.addEventListener("mouseenter", (e) => {
+            addFolderContainer.style.display = "flex";
+          });
 
-        folderContainer.addEventListener("mouseleave", (e) => {
-          addFolderContainer.style.display = "none";
-        });
+          folderContainer.addEventListener("mouseleave", (e) => {
+            addFolderContainer.style.display = "none";
+          });
 
-        folderContainer.addEventListener("click", (e) => {
-          arrowImgBtn.classList.toggle("arrow-rotate");
-          const children =
-            arrowImgBtn.parentElement.parentElement.nextElementSibling;
+          folderContainer.addEventListener("click", (e) => {
+            arrowImgBtn.classList.toggle("arrow-rotate");
+            const children =
+              arrowImgBtn.parentElement.parentElement.nextElementSibling;
 
-          children.classList.toggle("hidden-child");
-        });
+            children.classList.toggle("hidden-child");
+          });
+        }
+
+        const files = this.getFiles(file.id);
+        if (files.length) {
+          const subFiles = this.createFolderElements(files);
+          outerDiv.appendChild(subFiles);
+          this.addDragOver(folderContainer.nextElementSibling);
+        }
+
+        // if (subFiles) {
+        //   console.log(subFiles.children[0]);
+        //   const nestedInput = document.createElement("input");
+        //   nestedInput.type = "text";
+        //   nestedInput.classList.add("input");
+
+        //   outerDiv.appendChild(nestedInput);
+        // }
       }
 
-      const files = this.getFiles(file.id);
-      const subFiles = this.createFolderElements(files);
-
-      // if (subFiles) {
-      //   console.log(subFiles.children[0]);
-      //   const nestedInput = document.createElement("input");
-      //   nestedInput.type = "text";
-      //   nestedInput.classList.add("input");
-
-      //   outerDiv.appendChild(nestedInput);
-      // }
-
-      outerDiv.appendChild(subFiles);
+      fragment.appendChild(outerDiv);
+      return fragment;
     }
-    fragment.appendChild(outerDiv);
-    return fragment;
   }
 
   render() {
@@ -317,7 +394,7 @@ rootInput.addEventListener("keydown", (e) => {
     const value = rootInput.value;
 
     if (value.trim()) {
-      app.createRootFolderOrFile(value, null, type);
+      app.createFolderOrFileNode(value, null, type);
 
       rootInput.value = "";
       title.style.display = "block";

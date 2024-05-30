@@ -105,6 +105,7 @@ h1 {
 }
 
 .outer-div .outer-div {
+  z-index: 999;
   padding: 0px 30px;
   right: 30px;
   margin-left: 40px;
@@ -149,6 +150,7 @@ h1 {
 
 .arrow {
   width: 25px;
+  margin-right: 16px;
   transition: 0.3s ease-in-out;
   cursor: pointer;
   transform: rotate(90deg);
@@ -168,6 +170,10 @@ h1 {
 
 .folder {
   display: flex;
+}
+
+.is-dragging {
+  background-color: rgb(18, 226, 167) !important;
 }
 
 .file-name-img {
