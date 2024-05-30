@@ -37,6 +37,7 @@ h1 {
   width: 30px;
   cursor: pointer;
   padding: 4px;
+  transition: 0.5s ease;
 }
 .add-root:nth-child(1) {
   right: 50px;
@@ -185,7 +186,6 @@ h1 {
 
 .img-btn {
   width: 26px;
-  cursor: pointer;
   padding: 4px;
 }
 .img-btn:nth-child(2) {
@@ -202,5 +202,5 @@ h1 {
 }
 
 .hide-root-btn {
-  display: none;
+  transform: translate(-250px);
 }
